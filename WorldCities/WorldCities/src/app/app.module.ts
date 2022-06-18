@@ -9,6 +9,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './modules/app-routing.module';
 import { CitiesComponent } from './components/cities/cities.component';
 import { AngularMaterialModule } from './modules/angular-material.module';
+import { CountriesComponent } from './components/countries/countries.component';
 
 @NgModule({
   declarations: [
@@ -16,6 +17,7 @@ import { AngularMaterialModule } from './modules/angular-material.module';
     HomeComponent,
     NavMenuComponent,
     CitiesComponent,
+    CountriesComponent,
   ],
   imports: [
     BrowserModule,
