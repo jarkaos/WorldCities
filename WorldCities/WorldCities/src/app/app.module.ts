@@ -10,6 +10,8 @@ import { AppRoutingModule } from './modules/app-routing.module';
 import { CitiesComponent } from './components/cities/cities.component';
 import { AngularMaterialModule } from './modules/angular-material.module';
 import { CountriesComponent } from './components/countries/countries.component';
+import { ReactiveFormsModule } from '@angular/forms';
+import { CityEditComponent } from './components/cities/city-edit/city-edit.component';
 
 @NgModule({
   declarations: [
@@ -18,6 +20,7 @@ import { CountriesComponent } from './components/countries/countries.component';
     NavMenuComponent,
     CitiesComponent,
     CountriesComponent,
+    CityEditComponent,
   ],
   imports: [
     BrowserModule,
@@ -25,6 +28,7 @@ import { CountriesComponent } from './components/countries/countries.component';
     BrowserAnimationsModule,
     AppRoutingModule,
     AngularMaterialModule,
+    ReactiveFormsModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
