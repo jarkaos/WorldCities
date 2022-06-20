@@ -1,4 +1,3 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import {
   AbstractControl,
@@ -9,17 +8,18 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map, Observable } from 'rxjs';
+import { BaseFormComponent } from 'src/app/base-form.component';
 import { environment } from 'src/environments/environment';
 import { ICountry } from '../country';
+import { CountryService } from '../../../services/country.service';
 
 @Component({
   selector: 'app-country-edit',
   templateUrl: './country-edit.component.html',
   styleUrls: ['./country-edit.component.css'],
 })
-export class CountryEditComponent implements OnInit {
+export class CountryEditComponent extends BaseFormComponent implements OnInit {
   title?: string;
-  form!: FormGroup;
   country?: ICountry;
   id?: number;
   countries?: ICountry[];
@@ -28,8 +28,10 @@ export class CountryEditComponent implements OnInit {
     private fb: FormBuilder,
     private activatedRouter: ActivatedRoute,
     private router: Router,
-    private http: HttpClient
-  ) {}
+    private countryService: CountryService
+  ) {
+    super();
+  }
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -53,18 +55,13 @@ export class CountryEditComponent implements OnInit {
     return (
       control: AbstractControl
     ): Observable<{ [key: string]: any } | null> => {
-      var params = new HttpParams()
-        .set('countryId', this.id ? this.id.toString() : '0')
-        .set('fieldName', fieldName)
-        .set('fieldValue', control.value);
-
-      var url = environment.baseUrl + 'api/Countries/isDupedField';
-
-      return this.http.post<boolean>(url, null, { params }).pipe(
-        map((result) => {
-          return result ? { isDoupeField: true } : null;
-        })
-      );
+      return this.countryService
+        .isDupeField(this.id ?? 0, fieldName, control.value)
+        .pipe(
+          map((result) => {
+            return result ? { isDupeField: true } : null;
+          })
+        );
     };
   }
 
@@ -73,8 +70,7 @@ export class CountryEditComponent implements OnInit {
     this.id = idParam ? +idParam : 0;
 
     if (this.id) {
-      var url = environment.baseUrl + 'api/Countries/' + this.id;
-      this.http.get<ICountry>(url).subscribe(
+      this.countryService.get(this.id).subscribe(
         (result) => {
           this.country = result;
           this.title = 'Edit - ' + this.country.name;
@@ -95,8 +91,7 @@ export class CountryEditComponent implements OnInit {
       country.iso3 = this.form.controls['iso3'].value;
 
       if (this.id) {
-        var url = environment.baseUrl + 'api/Countries/' + country.id;
-        this.http.put<ICountry>(url, country).subscribe(
+        this.countryService.put(country).subscribe(
           (result) => {
             console.log('Country ' + country!.id + ' has been updated');
 
@@ -106,8 +101,7 @@ export class CountryEditComponent implements OnInit {
         );
       }
     } else {
-      var url = environment.baseUrl + 'api/Countries/';
-      this.http.post<ICountry>(url, country).subscribe(
+      this.countryService.post(country!).subscribe(
         (result) => {
           console.log('Country ' + result.id + ' has been created');
 
