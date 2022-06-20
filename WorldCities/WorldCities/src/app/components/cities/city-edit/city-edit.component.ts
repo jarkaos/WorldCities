@@ -13,18 +13,18 @@ import { ICity } from '../city';
 import { ICountry } from '../../countries/country';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { BaseFormComponent } from 'src/app/base-form.component';
+import { CityService } from '../../../services/city.service';
+import { ApiResult } from '../../../services/base.service';
 
 @Component({
   selector: 'app-city-edit',
   templateUrl: './city-edit.component.html',
   styleUrls: ['./city-edit.component.scss'],
 })
-export class CityEditComponent implements OnInit {
+export class CityEditComponent extends BaseFormComponent implements OnInit {
   // the view title
   title?: string;
-
-  // the form model
-  form!: FormGroup;
 
   // the object to edit
   city?: ICity;
@@ -36,15 +36,23 @@ export class CityEditComponent implements OnInit {
   constructor(
     private activatedRouter: ActivatedRoute,
     private router: Router,
-    private http: HttpClient
-  ) {}
+    private cityService: CityService
+  ) {
+    super();
+  }
 
   ngOnInit(): void {
     this.form = new FormGroup(
       {
         name: new FormControl('', Validators.required),
-        lat: new FormControl('', Validators.required),
-        lon: new FormControl('', Validators.required),
+        lat: new FormControl('', [
+          Validators.required,
+          Validators.pattern(/^[-]?[0-9]+(\.[0-9]{1,4})?$/),
+        ]),
+        lon: new FormControl('', [
+          Validators.required,
+          Validators.pattern(/^[-]?[0-9]+(\.[0-9]{1,4})?$/),
+        ]),
         countryId: new FormControl('', Validators.required),
       },
       null,
@@ -64,8 +72,7 @@ export class CityEditComponent implements OnInit {
       city.lon = this.form.controls['lon'].value;
       city.countryId = this.form.controls['countryId'].value;
 
-      var url = environment.baseUrl + 'api/Cities/IsDupeCity';
-      return this.http.post<boolean>(url, city).pipe(
+      return this.cityService.isDupeCity(city).pipe(
         map((result) => {
           return result ? { isDupeCity: true } : null;
         })
@@ -83,8 +90,7 @@ export class CityEditComponent implements OnInit {
 
     if (this.id) {
       // edit mode
-      var url = environment.baseUrl + 'api/Cities/' + this.id;
-      this.http.get<ICity>(url).subscribe(
+      this.cityService.get(this.id).subscribe(
         (result) => {
           this.city = result;
           this.title = 'Edit - ' + this.city.name;
@@ -107,7 +113,7 @@ export class CityEditComponent implements OnInit {
       .set('pageSize', '9999')
       .set('sortColumn', 'name');
 
-    this.http.get<any>(url, { params }).subscribe(
+    this.cityService.getCountries(0, 9999, 'name', 'asc', null, null).subscribe(
       (result) => {
         this.countries = result.data;
       },
@@ -125,8 +131,7 @@ export class CityEditComponent implements OnInit {
 
       if (this.id) {
         // edit mode
-        var url = environment.baseUrl + 'api/Cities/' + city.id;
-        this.http.put<ICity>(url, city).subscribe(
+        this.cityService.put(city).subscribe(
           (result) => {
             console.log('City ' + city?.id + ' has been updated.');
 
@@ -137,8 +142,7 @@ export class CityEditComponent implements OnInit {
         );
       } else {
         // add mode
-        var url = environment.baseUrl + 'api/Cities/';
-        this.http.post<ICity>(url, city).subscribe(
+        this.cityService.post(city).subscribe(
           (result) => {
             console.log('City ' + result.id + ' has been created.');
 
